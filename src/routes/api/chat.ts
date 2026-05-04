@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/api/chat")({
+  // @ts-expect-error server handlers not yet typed
   server: {
     handlers: {
       POST: async ({ request }: { request: Request }) => {
