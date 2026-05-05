@@ -53,6 +53,13 @@ export function Sidebar({ collapsed, onToggle, onOpenSettings }: SidebarProps) {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      "--sidebar-w",
+      collapsed ? "68px" : "304px",
+    );
+  }, [collapsed]);
+
   const filteredChats = chats.filter((c) =>
     c.title.toLowerCase().includes(search.toLowerCase()),
   );
