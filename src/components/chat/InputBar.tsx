@@ -31,7 +31,10 @@ export function InputBar({ onSend, disabled, initialValue }: Props) {
   };
 
   return (
-    <div className="relative mx-auto w-full max-w-3xl px-4 pb-6">
+    <div
+      className="relative mx-auto w-full max-w-3xl px-4 pb-6"
+      style={{ transform: "translateX(calc(var(--sidebar-w, 0px) / -2))" }}
+    >
       {/* gradient fade above */}
       <div
         className="pointer-events-none absolute -top-12 right-0 left-0 h-12"
