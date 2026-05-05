@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Toaster } from "sonner";
 import { Sidebar } from "@/components/Sidebar";
 import { ChatWindow } from "@/components/chat/ChatWindow";
+import { SettingsModal } from "@/components/SettingsModal";
+import { ThemeBridge } from "@/components/ThemeBridge";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -14,12 +16,13 @@ function Index() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
+      <ThemeBridge />
       <Sidebar
         collapsed={collapsed}
         onToggle={() => setCollapsed((c) => !c)}
         onOpenSettings={() => setSettingsOpen(true)}
       />
-      <main className="relative flex-1 overflow-hidden">
+      <main className="relative min-w-0 flex-1 overflow-hidden">
         <ChatWindow />
       </main>
       <Toaster
@@ -33,28 +36,7 @@ function Index() {
           },
         }}
       />
-      {settingsOpen && (
-        <div
-          className="fixed inset-0 z-50 grid place-items-center bg-black/60 backdrop-blur-sm"
-          onClick={() => setSettingsOpen(false)}
-        >
-          <div
-            className="glass w-full max-w-md rounded-2xl p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="font-display text-lg font-semibold">Settings</h2>
-            <p className="mt-2 text-sm text-text-secondary">
-              Full settings panel coming next. (Phase 1 ships sidebar + chat + streaming AI.)
-            </p>
-            <button
-              onClick={() => setSettingsOpen(false)}
-              className="mt-4 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }
