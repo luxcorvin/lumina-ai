@@ -115,7 +115,10 @@ export function ChatWindow() {
         {isEmpty ? (
           <EmptyState greeting={getGreeting()} onPick={(t) => setPrefill(t)} />
         ) : (
-          <div className="mx-auto w-full max-w-3xl px-6 py-10">
+          <div
+            className="mx-auto w-full max-w-3xl px-6 py-10"
+            style={{ transform: "translateX(calc(var(--sidebar-w, 0px) / -2))" }}
+          >
             <div className="space-y-6">
               <AnimatePresence initial={false}>
                 {chat!.messages.map((m) => (

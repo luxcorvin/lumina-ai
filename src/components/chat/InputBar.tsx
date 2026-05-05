@@ -31,7 +31,10 @@ export function InputBar({ onSend, disabled, initialValue }: Props) {
   };
 
   return (
-    <div className="relative mx-auto w-full max-w-3xl px-4 pb-6">
+    <div
+      className="relative mx-auto w-full max-w-3xl px-4 pb-6"
+      style={{ transform: "translateX(calc(var(--sidebar-w, 0px) / -2))" }}
+    >
       {/* gradient fade above */}
       <div
         className="pointer-events-none absolute -top-12 right-0 left-0 h-12"
@@ -40,10 +43,7 @@ export function InputBar({ onSend, disabled, initialValue }: Props) {
             "linear-gradient(to top, var(--surface-0) 0%, color-mix(in oklab, var(--surface-0) 80%, transparent) 50%, transparent 100%)",
         }}
       />
-      <motion.div
-        layout
-        className="relative rounded-3xl border border-border bg-surface-2 shadow-xl transition-colors focus-within:border-border-hover"
-      >
+      <div className="relative rounded-3xl border border-border bg-surface-2 shadow-xl transition-colors focus-within:border-border-hover">
         <textarea
           ref={ref}
           rows={1}
@@ -81,7 +81,7 @@ export function InputBar({ onSend, disabled, initialValue }: Props) {
             <ArrowUp size={15} strokeWidth={2.5} />
           </motion.button>
         </div>
-      </motion.div>
+      </div>
       <div className="mt-2 text-center text-[11px] text-text-muted">
         Aether can make mistakes. Verify important info.
       </div>
