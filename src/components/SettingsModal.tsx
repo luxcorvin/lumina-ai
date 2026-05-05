@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useSettings, ACCENTS, type AccentColor, type Theme, type Density, type FontScale, type ModelId } from "@/lib/settings-store";
+import { MODELS } from "@/lib/models";
 import { useChatStore } from "@/lib/chat-store";
 import { cn } from "@/lib/utils";
 
@@ -349,12 +350,10 @@ function ModelTab() {
           <Select<ModelId>
             value={model}
             onChange={(v) => set("model", v)}
-            options={[
-              { value: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash (fast)" },
-              { value: "google/gemini-2.5-pro", label: "Gemini 2.5 Pro" },
-              { value: "openai/gpt-5-mini", label: "GPT-5 Mini" },
-              { value: "openai/gpt-5", label: "GPT-5" },
-            ]}
+            options={MODELS.map((m) => ({
+              value: m.id,
+              label: `${m.label}${m.badge ? ` · ${m.badge}` : ""} — ${m.provider}`,
+            }))}
           />
         </Row>
         <Row label="Temperature" hint="Lower = focused, higher = creative.">

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { ArrowUp, Paperclip, Globe } from "lucide-react";
+import { ModelPicker } from "./ModelPicker";
 
 interface Props {
   onSend: (text: string) => void;
@@ -31,10 +32,7 @@ export function InputBar({ onSend, disabled, initialValue }: Props) {
   };
 
   return (
-    <div
-      className="relative mx-auto w-full max-w-3xl px-4 pb-6"
-      style={{ transform: "translateX(calc(var(--sidebar-w, 0px) / -2))" }}
-    >
+    <div className="relative mx-auto w-full max-w-3xl px-4 pb-6">
       {/* gradient fade above */}
       <div
         className="pointer-events-none absolute -top-12 right-0 left-0 h-12"
@@ -66,6 +64,9 @@ export function InputBar({ onSend, disabled, initialValue }: Props) {
             <ToolbarButton title="Web search">
               <Globe size={15} />
             </ToolbarButton>
+            <div className="ml-1">
+              <ModelPicker />
+            </div>
           </div>
           <motion.button
             whileTap={{ scale: 0.92 }}

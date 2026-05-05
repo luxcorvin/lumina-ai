@@ -20,6 +20,8 @@ export interface Project {
   name: string;
   emoji: string;
   color: string;
+  description?: string;
+  instructions?: string;
   pinned?: boolean;
 }
 

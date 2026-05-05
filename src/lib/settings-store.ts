@@ -5,7 +5,7 @@ export type Theme = "dark" | "light" | "system";
 export type Density = "comfortable" | "compact";
 export type AccentColor = "emerald" | "violet" | "rose" | "amber" | "sky";
 export type FontScale = "sm" | "md" | "lg";
-export type ModelId = "google/gemini-2.5-flash" | "google/gemini-2.5-pro" | "openai/gpt-5" | "openai/gpt-5-mini";
+export type ModelId = string;
 
 export interface SettingsState {
   // Profile
@@ -61,7 +61,7 @@ const DEFAULTS = {
   reduceMotion: false,
   showGrain: true,
 
-  model: "google/gemini-2.5-flash" as ModelId,
+  model: "google/gemini-3-flash-preview" as ModelId,
   temperature: 0.7,
   maxTokens: 2048,
   systemPrompt: "",

@@ -30,10 +30,13 @@ export function Sidebar({ collapsed, onToggle, onOpenSettings }: SidebarProps) {
     projects,
     chats,
     activeChatId,
+    activeProjectId,
     createChat,
     setActiveChat,
+    setActiveProject,
     createProject,
     deleteChat,
+    deleteProject,
   } = useChatStore();
 
   const [projectsOpen, setProjectsOpen] = useState(true);
@@ -184,17 +187,17 @@ export function Sidebar({ collapsed, onToggle, onOpenSettings }: SidebarProps) {
                   >
                     <div className="mt-1 space-y-0.5">
                       {projects.map((p) => (
-                        <button
+                        <ProjectRow
                           key={p.id}
-                          className="group flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-text-secondary transition-colors hover:bg-surface-3 hover:text-text-primary"
-                        >
-                          <span className="text-base">{p.emoji}</span>
-                          <span className="truncate">{p.name}</span>
-                          <span
-                            className="ml-auto h-1.5 w-1.5 rounded-full"
-                            style={{ backgroundColor: p.color }}
-                          />
-                        </button>
+                          emoji={p.emoji}
+                          name={p.name}
+                          color={p.color}
+                          active={p.id === activeProjectId && !activeChatId}
+                          onSelect={() => setActiveProject(p.id)}
+                          onDelete={() => {
+                            if (confirm(`Delete project "${p.name}"?`)) deleteProject(p.id);
+                          }}
+                        />
                       ))}
                       {creatingProject && (
                         <motion.form
@@ -409,6 +412,85 @@ function ChatRow({
             setMenu((m) => !m);
           }}
           className="absolute top-1/2 right-1 -translate-y-1/2 rounded p-1 text-text-muted hover:bg-surface-4 hover:text-text-primary"
+        >
+          <MoreHorizontal size={12} />
+        </button>
+      )}
+      <AnimatePresence>
+        {menu && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="glass absolute top-7 right-1 z-30 w-36 rounded-lg p-1 shadow-xl"
+          >
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+                setMenu(false);
+              }}
+              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-destructive hover:bg-surface-3"
+            >
+              <Trash2 size={12} />
+              Delete
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function ProjectRow({
+  emoji,
+  name,
+  color,
+  active,
+  onSelect,
+  onDelete,
+}: {
+  emoji: string;
+  name: string;
+  color: string;
+  active: boolean;
+  onSelect: () => void;
+  onDelete: () => void;
+}) {
+  const [hover, setHover] = useState(false);
+  const [menu, setMenu] = useState(false);
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => {
+        setHover(false);
+        setMenu(false);
+      }}
+    >
+      <button
+        onClick={onSelect}
+        className={cn(
+          "group flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
+          active
+            ? "bg-surface-3 text-text-primary"
+            : "text-text-secondary hover:bg-surface-3 hover:text-text-primary",
+        )}
+      >
+        <span className="text-base">{emoji}</span>
+        <span className="truncate">{name}</span>
+        <span
+          className="ml-auto h-1.5 w-1.5 rounded-full"
+          style={{ backgroundColor: color }}
+        />
+      </button>
+      {hover && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenu((m) => !m);
+          }}
+          className="absolute top-1/2 right-4 -translate-y-1/2 rounded p-1 text-text-muted hover:bg-surface-4 hover:text-text-primary"
         >
           <MoreHorizontal size={12} />
         </button>

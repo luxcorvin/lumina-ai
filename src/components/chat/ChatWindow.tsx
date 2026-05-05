@@ -3,9 +3,11 @@ import { AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { useChatStore } from "@/lib/chat-store";
 import { uid } from "@/lib/chat-types";
+import { useSettings } from "@/lib/settings-store";
 import { EmptyState } from "./EmptyState";
 import { MessageBubble } from "./MessageBubble";
 import { InputBar } from "./InputBar";
+import { ProjectView } from "../ProjectView";
 
 function getGreeting(): string {
   const h = new Date().getHours();
@@ -16,7 +18,8 @@ function getGreeting(): string {
 }
 
 export function ChatWindow() {
-  const { chats, activeChatId, createChat, appendMessage, updateLastAssistant } = useChatStore();
+  const { chats, activeChatId, activeProjectId, projects, createChat, appendMessage, updateLastAssistant } = useChatStore();
+  const { model, systemPrompt, temperature } = useSettings();
   const chat = chats.find((c) => c.id === activeChatId) ?? null;
   const [streaming, setStreaming] = useState(false);
   const [prefill, setPrefill] = useState<string | undefined>();
@@ -41,6 +44,10 @@ export function ChatWindow() {
     };
     appendMessage(id, assistantMsg);
 
+    const project = projects.find((p) => p.id === (chats.find((c) => c.id === id)?.projectId));
+    const projectInstr = project?.instructions?.trim();
+    const finalSystem = [systemPrompt?.trim(), projectInstr].filter(Boolean).join("\n\n");
+
     const history = [
       ...(chats.find((c) => c.id === id)?.messages ?? []),
       userMsg,
@@ -52,7 +59,7 @@ export function ChatWindow() {
       const resp = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history }),
+        body: JSON.stringify({ messages: history, model, systemPrompt: finalSystem, temperature }),
       });
 
       if (!resp.ok || !resp.body) {
@@ -107,18 +114,23 @@ export function ChatWindow() {
     }
   };
 
+  // Project view (no active chat, but a project is active)
+  if (!chat && activeProjectId) {
+    return <ProjectView projectId={activeProjectId} />;
+  }
+
   const isEmpty = !chat || chat.messages.length === 0;
 
   return (
-    <div className="bg-grain relative flex h-full flex-col bg-background">
-      <div ref={scrollRef} className="flex-1 overflow-y-auto">
-        {isEmpty ? (
+    <div className="bg-grain relative flex h-full min-h-0 flex-col bg-background">
+      {isEmpty ? (
+        // Empty state: no scroll, fills the available area
+        <div className="min-h-0 flex-1 overflow-hidden">
           <EmptyState greeting={getGreeting()} onPick={(t) => setPrefill(t)} />
-        ) : (
-          <div
-            className="mx-auto w-full max-w-3xl px-6 py-10"
-            style={{ transform: "translateX(calc(var(--sidebar-w, 0px) / -2))" }}
-          >
+        </div>
+      ) : (
+        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
+          <div className="mx-auto w-full max-w-3xl px-6 py-10">
             <div className="space-y-6">
               <AnimatePresence initial={false}>
                 {chat!.messages.map((m) => (
@@ -127,8 +139,8 @@ export function ChatWindow() {
               </AnimatePresence>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
       <InputBar onSend={send} disabled={streaming} initialValue={prefill} />
     </div>
   );
