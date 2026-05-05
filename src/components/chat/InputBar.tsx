@@ -78,7 +78,7 @@ export function InputBar({ onSend, disabled, initialValue }: Props) {
             <ArrowUp size={15} strokeWidth={2.5} />
           </motion.button>
         </div>
-      </motion.div>
+      </div>
       <div className="mt-2 text-center text-[11px] text-text-muted">
         Aether can make mistakes. Verify important info.
       </div>
