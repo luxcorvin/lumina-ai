@@ -30,10 +30,13 @@ export function Sidebar({ collapsed, onToggle, onOpenSettings }: SidebarProps) {
     projects,
     chats,
     activeChatId,
+    activeProjectId,
     createChat,
     setActiveChat,
+    setActiveProject,
     createProject,
     deleteChat,
+    deleteProject,
   } = useChatStore();
 
   const [projectsOpen, setProjectsOpen] = useState(true);
@@ -184,17 +187,17 @@ export function Sidebar({ collapsed, onToggle, onOpenSettings }: SidebarProps) {
                   >
                     <div className="mt-1 space-y-0.5">
                       {projects.map((p) => (
-                        <button
+                        <ProjectRow
                           key={p.id}
-                          className="group flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-text-secondary transition-colors hover:bg-surface-3 hover:text-text-primary"
-                        >
-                          <span className="text-base">{p.emoji}</span>
-                          <span className="truncate">{p.name}</span>
-                          <span
-                            className="ml-auto h-1.5 w-1.5 rounded-full"
-                            style={{ backgroundColor: p.color }}
-                          />
-                        </button>
+                          emoji={p.emoji}
+                          name={p.name}
+                          color={p.color}
+                          active={p.id === activeProjectId && !activeChatId}
+                          onSelect={() => setActiveProject(p.id)}
+                          onDelete={() => {
+                            if (confirm(`Delete project "${p.name}"?`)) deleteProject(p.id);
+                          }}
+                        />
                       ))}
                       {creatingProject && (
                         <motion.form
