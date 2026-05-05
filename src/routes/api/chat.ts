@@ -6,7 +6,7 @@ export const Route = createFileRoute("/api/chat")({
     handlers: {
       POST: async ({ request }: { request: Request }) => {
         try {
-          const { messages } = await request.json();
+          const { messages, model, systemPrompt, temperature } = await request.json();
           const apiKey = process.env.LOVABLE_API_KEY;
           if (!apiKey) {
             return new Response(JSON.stringify({ error: "AI not configured" }), {
@@ -15,6 +15,10 @@ export const Route = createFileRoute("/api/chat")({
             });
           }
 
+          const sys =
+            (systemPrompt && String(systemPrompt).trim()) ||
+            "You are Aether, a thoughtful, fast, and elegant AI assistant. Be concise but rich. Format with markdown when helpful. Use code blocks for code.";
+
           const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
             method: "POST",
             headers: {
@@ -22,14 +26,11 @@ export const Route = createFileRoute("/api/chat")({
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              model: "google/gemini-3-flash-preview",
+              model: model || "google/gemini-3-flash-preview",
               stream: true,
+              temperature: typeof temperature === "number" ? temperature : undefined,
               messages: [
-                {
-                  role: "system",
-                  content:
-                    "You are Aether, a thoughtful, fast, and elegant AI assistant. Be concise but rich. Format with markdown when helpful. Use code blocks for code.",
-                },
+                { role: "system", content: sys },
                 ...messages,
               ],
             }),
