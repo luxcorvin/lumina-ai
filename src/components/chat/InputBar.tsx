@@ -40,10 +40,7 @@ export function InputBar({ onSend, disabled, initialValue }: Props) {
             "linear-gradient(to top, var(--surface-0) 0%, color-mix(in oklab, var(--surface-0) 80%, transparent) 50%, transparent 100%)",
         }}
       />
-      <motion.div
-        layout
-        className="relative rounded-3xl border border-border bg-surface-2 shadow-xl transition-colors focus-within:border-border-hover"
-      >
+      <div className="relative rounded-3xl border border-border bg-surface-2 shadow-xl transition-colors focus-within:border-border-hover">
         <textarea
           ref={ref}
           rows={1}
