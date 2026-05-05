@@ -50,7 +50,7 @@ export const useChatStore = create<ChatStore>()(
         set({ chats: [chat, ...get().chats], activeChatId: id });
         return id;
       },
-      setActiveChat: (id) => set({ activeChatId: id }),
+      setActiveChat: (id) => set({ activeChatId: id, activeProjectId: id ? null : get().activeProjectId }),
       setActiveProject: (id) => set({ activeProjectId: id, activeChatId: null }),
       appendMessage: (chatId, msg) =>
         set({
