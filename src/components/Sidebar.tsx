@@ -269,14 +269,31 @@ export function Sidebar({ collapsed, onToggle, onOpenSettings }: SidebarProps) {
         )}
 
         {collapsed && (
-          <div className="mt-3 flex flex-col items-center gap-2">
-            <button
-              onClick={() => createChat()}
-              className="grid h-9 w-9 place-items-center rounded-lg text-text-secondary hover:bg-surface-3 hover:text-text-primary"
-              aria-label="New chat"
-            >
-              <MessageSquare size={16} />
-            </button>
+          <div className="mt-3 flex flex-col items-center gap-1">
+            <CollapsedIcon
+              icon={<Search size={16} />}
+              label="Search"
+              onClick={onToggle}
+            />
+            {chats.slice(0, 8).map((c) => (
+              <CollapsedIcon
+                key={c.id}
+                icon={<MessageSquare size={15} />}
+                label={c.title}
+                active={c.id === activeChatId}
+                onClick={() => setActiveChat(c.id)}
+              />
+            ))}
+            {projects.length > 0 && <div className="my-1 h-px w-6 bg-border" />}
+            {projects.slice(0, 6).map((p) => (
+              <CollapsedIcon
+                key={p.id}
+                icon={<span className="text-base leading-none">{p.emoji}</span>}
+                label={p.name}
+                active={p.id === activeProjectId && !activeChatId}
+                onClick={() => setActiveProject(p.id)}
+              />
+            ))}
           </div>
         )}
       </div>
