@@ -1,10 +1,23 @@
 export type Role = "user" | "assistant";
 
+export interface Attachment {
+  id: string;
+  name: string;
+  mime: string;
+  size: number;
+  /** data URL for images, or text excerpt for text-like files */
+  dataUrl?: string;
+  text?: string;
+  kind: "image" | "file";
+}
+
 export interface Message {
   id: string;
   role: Role;
   content: string;
   createdAt: number;
+  attachments?: Attachment[];
+  tool?: "web_search" | "deep_research" | null;
 }
 
 export interface Chat {
