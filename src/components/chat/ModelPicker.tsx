@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Check, ChevronDown, Sparkles, Zap, Cpu } from "lucide-react";
+import { Check, ChevronDown, Sparkles, Zap, Brain } from "lucide-react";
 import { MODELS, getModel, type ModelOption } from "@/lib/models";
 import { useSettings } from "@/lib/settings-store";
 import { cn } from "@/lib/utils";
@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 const FAMILY_META: Record<ModelOption["family"], { label: string; icon: typeof Sparkles }> = {
   frontier: { label: "Frontier", icon: Sparkles },
   fast: { label: "Fast & efficient", icon: Zap },
-  open: { label: "Open source", icon: Cpu },
+  reasoning: { label: "Reasoning", icon: Brain },
 };
 
 export function ModelPicker({ compact = false }: { compact?: boolean }) {
@@ -59,7 +59,7 @@ export function ModelPicker({ compact = false }: { compact?: boolean }) {
                 </div>
               </div>
               <div className="max-h-[400px] overflow-y-auto py-1">
-                {(["frontier", "fast", "open"] as const).map((fam) => {
+                {(["frontier", "fast", "reasoning"] as const).map((fam) => {
                   const items = grouped[fam];
                   if (!items?.length) return null;
                   const Meta = FAMILY_META[fam];

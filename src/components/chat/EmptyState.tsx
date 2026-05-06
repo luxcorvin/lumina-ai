@@ -27,7 +27,7 @@ export function EmptyState({ greeting, onPick }: Props) {
           Aether · Gemini 3 Flash
         </div>
         <h1 className="text-balance font-display text-4xl font-semibold tracking-tight md:text-5xl">
-          {greeting}
+          {greeting || "Hello"}
         </h1>
         <p className="mt-3 text-text-secondary">What would you like to think about today?</p>
       </motion.div>

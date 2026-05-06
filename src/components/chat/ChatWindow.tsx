@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { useChatStore } from "@/lib/chat-store";
-import { uid } from "@/lib/chat-types";
+import { uid, type Attachment } from "@/lib/chat-types";
 import { useSettings } from "@/lib/settings-store";
 import { EmptyState } from "./EmptyState";
 import { MessageBubble } from "./MessageBubble";
 import { InputBar } from "./InputBar";
 import { ProjectView } from "../ProjectView";
+import type { ToolMode } from "./ToolsPicker";
 
 function getGreeting(): string {
   const h = new Date().getHours();
@@ -17,23 +18,70 @@ function getGreeting(): string {
   return "Good evening";
 }
 
+// Build OpenAI-style content payload (text + image_url parts) for vision models.
+function buildContent(text: string, attachments: Attachment[]) {
+  const images = attachments.filter((a) => a.kind === "image" && a.dataUrl);
+  const fileBlobs = attachments.filter((a) => a.kind === "file" && a.text);
+
+  let composed = text;
+  if (fileBlobs.length) {
+    composed +=
+      "\n\n" +
+      fileBlobs
+        .map((f) => `--- File: ${f.name} ---\n${f.text}`)
+        .join("\n\n");
+  }
+
+  if (!images.length) return composed;
+
+  return [
+    { type: "text", text: composed || "Please analyze the attached image(s)." },
+    ...images.map((a) => ({
+      type: "image_url",
+      image_url: { url: a.dataUrl as string },
+    })),
+  ];
+}
+
 export function ChatWindow() {
-  const { chats, activeChatId, activeProjectId, projects, createChat, appendMessage, updateLastAssistant } = useChatStore();
+  const {
+    chats,
+    activeChatId,
+    activeProjectId,
+    projects,
+    createChat,
+    appendMessage,
+    updateLastAssistant,
+  } = useChatStore();
   const { model, systemPrompt, temperature } = useSettings();
   const chat = chats.find((c) => c.id === activeChatId) ?? null;
   const [streaming, setStreaming] = useState(false);
   const [prefill, setPrefill] = useState<string | undefined>();
+  const [greeting, setGreeting] = useState("Hello");
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // avoid SSR/CSR mismatch on time-of-day greeting
+  useEffect(() => setGreeting(getGreeting()), []);
+
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: "smooth",
+    });
   }, [chat?.messages.length, streaming]);
 
-  const send = async (text: string) => {
+  const send = async (text: string, attachments: Attachment[], tool: ToolMode) => {
     let id = activeChatId;
     if (!id) id = createChat();
 
-    const userMsg = { id: uid(), role: "user" as const, content: text, createdAt: Date.now() };
+    const userMsg = {
+      id: uid(),
+      role: "user" as const,
+      content: text,
+      attachments,
+      tool,
+      createdAt: Date.now(),
+    };
     appendMessage(id, userMsg);
 
     const assistantMsg = {
@@ -44,14 +92,30 @@ export function ChatWindow() {
     };
     appendMessage(id, assistantMsg);
 
-    const project = projects.find((p) => p.id === (chats.find((c) => c.id === id)?.projectId));
+    const project = projects.find(
+      (p) => p.id === chats.find((c) => c.id === id)?.projectId,
+    );
     const projectInstr = project?.instructions?.trim();
-    const finalSystem = [systemPrompt?.trim(), projectInstr].filter(Boolean).join("\n\n");
+    const toolInstr =
+      tool === "web_search"
+        ? "The user enabled WEB SEARCH. When relevant, cite sources by name and include URLs. If you don't have live access, transparently mark facts that may be stale."
+        : tool === "deep_research"
+          ? "The user enabled DEEP RESEARCH. Produce a structured, multi-section report with: executive summary, key findings, supporting analysis, sources/citations, and open questions. Be thorough."
+          : "";
+    const finalSystem = [systemPrompt?.trim(), projectInstr, toolInstr]
+      .filter(Boolean)
+      .join("\n\n");
 
     const history = [
       ...(chats.find((c) => c.id === id)?.messages ?? []),
       userMsg,
-    ].map((m) => ({ role: m.role, content: m.content }));
+    ].map((m) => ({
+      role: m.role,
+      content:
+        m.role === "user"
+          ? buildContent(m.content, m.attachments ?? [])
+          : m.content,
+    }));
 
     setStreaming(true);
 
@@ -59,7 +123,12 @@ export function ChatWindow() {
       const resp = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history, model, systemPrompt: finalSystem, temperature }),
+        body: JSON.stringify({
+          messages: history,
+          model,
+          systemPrompt: finalSystem,
+          temperature,
+        }),
       });
 
       if (!resp.ok || !resp.body) {
@@ -114,7 +183,6 @@ export function ChatWindow() {
     }
   };
 
-  // Project view (no active chat, but a project is active)
   if (!chat && activeProjectId) {
     return <ProjectView projectId={activeProjectId} />;
   }
@@ -124,9 +192,8 @@ export function ChatWindow() {
   return (
     <div className="bg-grain relative flex h-full min-h-0 flex-col bg-background">
       {isEmpty ? (
-        // Empty state: no scroll, fills the available area
         <div className="min-h-0 flex-1 overflow-hidden">
-          <EmptyState greeting={getGreeting()} onPick={(t) => setPrefill(t)} />
+          <EmptyState greeting={greeting} onPick={(t) => setPrefill(t)} />
         </div>
       ) : (
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">

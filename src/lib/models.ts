@@ -2,20 +2,30 @@ export interface ModelOption {
   id: string;
   label: string;
   provider: string;
-  family: "frontier" | "fast" | "open";
+  family: "frontier" | "fast" | "reasoning";
   description: string;
   badge?: string;
+  vision?: boolean;
 }
 
+// Only models actually available through Lovable AI Gateway.
 export const MODELS: ModelOption[] = [
-  // Frontier (Lovable AI Gateway)
   {
     id: "google/gemini-3-flash-preview",
     label: "Gemini 3 Flash",
     provider: "Google",
     family: "fast",
-    description: "Fast, balanced reasoning. Great default.",
+    description: "Fast, balanced. Great default.",
     badge: "Default",
+    vision: true,
+  },
+  {
+    id: "google/gemini-3.1-pro-preview",
+    label: "Gemini 3.1 Pro",
+    provider: "Google",
+    family: "frontier",
+    description: "Next-gen reasoning, large context.",
+    vision: true,
   },
   {
     id: "google/gemini-2.5-pro",
@@ -23,6 +33,7 @@ export const MODELS: ModelOption[] = [
     provider: "Google",
     family: "frontier",
     description: "Deep reasoning for complex tasks.",
+    vision: true,
   },
   {
     id: "google/gemini-2.5-flash",
@@ -30,6 +41,15 @@ export const MODELS: ModelOption[] = [
     provider: "Google",
     family: "fast",
     description: "Quick replies, low latency.",
+    vision: true,
+  },
+  {
+    id: "google/gemini-2.5-flash-lite",
+    label: "Gemini 2.5 Flash Lite",
+    provider: "Google",
+    family: "fast",
+    description: "Cheapest & fastest Gemini.",
+    vision: true,
   },
   {
     id: "openai/gpt-5",
@@ -37,6 +57,7 @@ export const MODELS: ModelOption[] = [
     provider: "OpenAI",
     family: "frontier",
     description: "Top-tier reasoning and writing.",
+    vision: true,
   },
   {
     id: "openai/gpt-5-mini",
@@ -44,56 +65,32 @@ export const MODELS: ModelOption[] = [
     provider: "OpenAI",
     family: "fast",
     description: "Affordable, capable, fast.",
-  },
-
-  // Open-source via OpenRouter
-  {
-    id: "openrouter/meta-llama/llama-3.3-70b-instruct",
-    label: "Llama 3.3 70B",
-    provider: "Meta · OpenRouter",
-    family: "open",
-    description: "Open-weight flagship. Strong general use.",
-    badge: "Open",
+    vision: true,
   },
   {
-    id: "openrouter/meta-llama/llama-3.1-405b-instruct",
-    label: "Llama 3.1 405B",
-    provider: "Meta · OpenRouter",
-    family: "open",
-    description: "Largest open Llama. Slower, very capable.",
-    badge: "Open",
+    id: "openai/gpt-5-nano",
+    label: "GPT-5 Nano",
+    provider: "OpenAI",
+    family: "fast",
+    description: "Highest throughput, lowest cost.",
+    vision: true,
   },
   {
-    id: "openrouter/mistralai/mixtral-8x22b-instruct",
-    label: "Mixtral 8x22B",
-    provider: "Mistral · OpenRouter",
-    family: "open",
-    description: "Sparse MoE. Fast & versatile.",
-    badge: "Open",
+    id: "openai/gpt-5.2",
+    label: "GPT-5.2",
+    provider: "OpenAI",
+    family: "reasoning",
+    description: "Enhanced reasoning model.",
+    vision: true,
   },
   {
-    id: "openrouter/qwen/qwen-2.5-72b-instruct",
-    label: "Qwen 2.5 72B",
-    provider: "Qwen · OpenRouter",
-    family: "open",
-    description: "Excellent multilingual & coding.",
-    badge: "Open",
-  },
-  {
-    id: "openrouter/deepseek/deepseek-r1",
-    label: "DeepSeek R1",
-    provider: "DeepSeek · OpenRouter",
-    family: "open",
-    description: "Open reasoning model.",
-    badge: "Open",
-  },
-  {
-    id: "openrouter/nousresearch/hermes-3-llama-3.1-70b",
-    label: "Hermes 3 70B",
-    provider: "Nous · OpenRouter",
-    family: "open",
-    description: "Steerable open assistant.",
-    badge: "Open",
+    id: "openai/gpt-5.4",
+    label: "GPT-5.4",
+    provider: "OpenAI",
+    family: "reasoning",
+    description: "Advanced multi-step reasoning.",
+    badge: "Reasoning",
+    vision: true,
   },
 ];
 

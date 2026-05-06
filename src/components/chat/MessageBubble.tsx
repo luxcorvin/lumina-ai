@@ -1,12 +1,14 @@
 import { motion } from "motion/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Copy, Check, Sparkles } from "lucide-react";
+import { Copy, Check, Sparkles, Globe, Telescope, FileText } from "lucide-react";
 import { useState } from "react";
 import type { Message } from "@/lib/chat-types";
 
 export function MessageBubble({ msg }: { msg: Message }) {
   if (msg.role === "user") {
+    const images = (msg.attachments ?? []).filter((a) => a.kind === "image");
+    const files = (msg.attachments ?? []).filter((a) => a.kind === "file");
     return (
       <motion.div
         initial={{ opacity: 0, y: 8 }}
@@ -14,12 +16,48 @@ export function MessageBubble({ msg }: { msg: Message }) {
         transition={{ duration: 0.25 }}
         className="flex justify-end"
       >
-        <div className="max-w-[80%] rounded-2xl rounded-tr-md border border-border bg-surface-3 px-4 py-2.5 text-sm text-text-primary">
-          {msg.content}
+        <div className="flex max-w-[80%] flex-col items-end gap-2">
+          {msg.tool && (
+            <div className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+              {msg.tool === "web_search" ? <Globe size={10} /> : <Telescope size={10} />}
+              {msg.tool === "web_search" ? "Web search" : "Deep research"}
+            </div>
+          )}
+          {images.length > 0 && (
+            <div className="grid max-w-full grid-cols-2 gap-2">
+              {images.map((a) => (
+                <img
+                  key={a.id}
+                  src={a.dataUrl}
+                  alt={a.name}
+                  className="max-h-48 rounded-xl border border-border object-cover"
+                />
+              ))}
+            </div>
+          )}
+          {files.length > 0 && (
+            <div className="flex flex-col gap-1">
+              {files.map((a) => (
+                <div
+                  key={a.id}
+                  className="flex items-center gap-2 rounded-lg border border-border bg-surface-3 px-2.5 py-1.5 text-xs"
+                >
+                  <FileText size={12} className="text-text-secondary" />
+                  <span className="truncate">{a.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {msg.content && (
+            <div className="rounded-2xl rounded-tr-md border border-border bg-surface-3 px-4 py-2.5 text-sm text-text-primary">
+              {msg.content}
+            </div>
+          )}
         </div>
       </motion.div>
     );
   }
+
 
   return (
     <motion.div
