@@ -189,26 +189,36 @@ export function ChatWindow() {
 
   const isEmpty = !chat || chat.messages.length === 0;
 
+  const inputBar = (
+    <InputBar onSend={send} disabled={streaming} initialValue={prefill} />
+  );
+
   return (
     <div className="bg-grain relative flex h-full min-h-0 flex-col bg-background">
       {isEmpty ? (
         <div className="min-h-0 flex-1 overflow-hidden">
-          <EmptyState greeting={greeting} onPick={(t) => setPrefill(t)} />
+          <EmptyState
+            greeting={greeting}
+            onPick={(t) => setPrefill(t)}
+            inputSlot={inputBar}
+          />
         </div>
       ) : (
-        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-3xl px-6 py-10">
-            <div className="space-y-6">
-              <AnimatePresence initial={false}>
-                {chat!.messages.map((m) => (
-                  <MessageBubble key={m.id} msg={m} />
-                ))}
-              </AnimatePresence>
+        <>
+          <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
+            <div className="mx-auto w-full max-w-3xl px-6 py-10">
+              <div className="space-y-6">
+                <AnimatePresence initial={false}>
+                  {chat!.messages.map((m) => (
+                    <MessageBubble key={m.id} msg={m} />
+                  ))}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
-        </div>
+          {inputBar}
+        </>
       )}
-      <InputBar onSend={send} disabled={streaming} initialValue={prefill} />
     </div>
   );
 }
