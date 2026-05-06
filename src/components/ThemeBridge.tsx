@@ -34,10 +34,7 @@ export function ThemeBridge() {
   }, [fontScale]);
 
   useEffect(() => {
-    document.documentElement.style.setProperty(
-      "--motion-scale",
-      reduceMotion ? "0" : "1",
-    );
+    document.documentElement.style.setProperty("--motion-scale", reduceMotion ? "0" : "1");
   }, [reduceMotion]);
 
   return null;

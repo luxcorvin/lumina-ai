@@ -30,10 +30,16 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Aether — Think faster" },
-      { name: "description", content: "Aether is a next-generation AI workspace for thinking, writing, and building." },
+      {
+        name: "description",
+        content: "Aether is a next-generation AI workspace for thinking, writing, and building.",
+      },
       { name: "theme-color", content: "#0a0a0f" },
       { property: "og:title", content: "Aether — Think faster" },
-      { property: "og:description", content: "A next-generation AI workspace for thinking, writing, and building." },
+      {
+        property: "og:description",
+        content: "A next-generation AI workspace for thinking, writing, and building.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

@@ -57,15 +57,10 @@ export function Sidebar({ collapsed, onToggle, onOpenSettings }: SidebarProps) {
   }, []);
 
   useEffect(() => {
-    document.documentElement.style.setProperty(
-      "--sidebar-w",
-      collapsed ? "68px" : "304px",
-    );
+    document.documentElement.style.setProperty("--sidebar-w", collapsed ? "68px" : "304px");
   }, [collapsed]);
 
-  const filteredChats = chats.filter((c) =>
-    c.title.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filteredChats = chats.filter((c) => c.title.toLowerCase().includes(search.toLowerCase()));
   const grouped = groupChatsByDate(filteredChats);
 
   return (
@@ -155,26 +150,34 @@ export function Sidebar({ collapsed, onToggle, onOpenSettings }: SidebarProps) {
           <>
             {/* Projects */}
             <div className="mt-2 px-1">
-              <button
-                onClick={() => setProjectsOpen((o) => !o)}
-                className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-xs font-semibold tracking-wider text-text-muted uppercase transition-colors hover:text-text-secondary"
-              >
-                <span className="flex items-center gap-1.5">
+              <div className="group flex w-full items-center justify-between rounded-md py-0.5 transition-colors hover:bg-surface-2">
+                <button
+                  onClick={() => setProjectsOpen((o) => !o)}
+                  className="grid h-6 w-6 place-items-center rounded text-text-muted hover:bg-surface-3 hover:text-text-primary"
+                >
                   {projectsOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveProject("all");
+                    setActiveChat(null);
+                  }}
+                  className="flex-1 px-1 py-1 text-left text-xs font-semibold tracking-wider text-text-muted uppercase transition-colors hover:text-text-primary"
+                >
                   Projects
-                </span>
+                </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setCreatingProject(true);
                     setProjectsOpen(true);
                   }}
-                  className="rounded p-1 text-text-muted hover:bg-surface-3 hover:text-text-primary"
+                  className="grid h-6 w-6 place-items-center rounded text-text-muted opacity-0 transition-opacity hover:bg-surface-3 hover:text-text-primary group-hover:opacity-100"
                   aria-label="New project"
                 >
                   <Plus size={12} />
                 </button>
-              </button>
+              </div>
 
               <AnimatePresence initial={false}>
                 {projectsOpen && (
@@ -270,11 +273,7 @@ export function Sidebar({ collapsed, onToggle, onOpenSettings }: SidebarProps) {
 
         {collapsed && (
           <div className="mt-3 flex flex-col items-center gap-1">
-            <CollapsedIcon
-              icon={<Search size={16} />}
-              label="Search"
-              onClick={onToggle}
-            />
+            <CollapsedIcon icon={<Search size={16} />} label="Search" onClick={onToggle} />
             {chats.slice(0, 8).map((c) => (
               <CollapsedIcon
                 key={c.id}
@@ -526,10 +525,7 @@ function ProjectRow({
       >
         <span className="text-base">{emoji}</span>
         <span className="truncate">{name}</span>
-        <span
-          className="ml-auto h-1.5 w-1.5 rounded-full"
-          style={{ backgroundColor: color }}
-        />
+        <span className="ml-auto h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
       </button>
       {hover && (
         <button

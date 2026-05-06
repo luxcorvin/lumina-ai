@@ -52,7 +52,8 @@
   --color-error: var(--destructive);
 
   --shadow-elegant: 0 10px 40px -12px color-mix(in oklab, var(--primary) 35%, transparent);
-  --shadow-glow: 0 0 0 1px color-mix(in oklab, var(--primary) 30%, transparent),
+  --shadow-glow:
+    0 0 0 1px color-mix(in oklab, var(--primary) 30%, transparent),
     0 8px 32px -8px color-mix(in oklab, var(--primary) 40%, transparent);
 
   --gradient-brand: linear-gradient(135deg, var(--primary) 0%, var(--primary-glow) 100%);
@@ -70,7 +71,7 @@
   /* Dark surface system (default) */
   --surface-0: oklch(0.14 0.01 270);
   --surface-1: oklch(0.17 0.012 270);
-  --surface-2: oklch(0.20 0.014 270);
+  --surface-2: oklch(0.2 0.014 270);
   --surface-3: oklch(0.24 0.016 270);
   --surface-4: oklch(0.29 0.018 270);
 
@@ -125,7 +126,9 @@
     border-color: var(--color-border);
   }
 
-  html, body, #root {
+  html,
+  body,
+  #root {
     height: 100%;
   }
 
@@ -138,14 +141,24 @@
     text-rendering: optimizeLegibility;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     letter-spacing: -0.015em;
   }
 
   /* Custom scrollbar */
-  ::-webkit-scrollbar { width: 10px; height: 10px; }
-  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
   ::-webkit-scrollbar-thumb {
     background: color-mix(in oklab, var(--text-muted) 35%, transparent);
     border-radius: 999px;
@@ -179,7 +192,9 @@
     border: 1px solid var(--border);
   }
 
-  .text-balance { text-wrap: balance; }
+  .text-balance {
+    text-wrap: balance;
+  }
 
   /* Ambient gradient for hero areas */
   .ambient-glow::before {
@@ -188,8 +203,16 @@
     inset: -20%;
     pointer-events: none;
     background:
-      radial-gradient(40% 30% at 20% 20%, color-mix(in oklab, var(--primary) 25%, transparent), transparent 60%),
-      radial-gradient(35% 30% at 85% 30%, color-mix(in oklab, var(--primary-glow) 20%, transparent), transparent 60%);
+      radial-gradient(
+        40% 30% at 20% 20%,
+        color-mix(in oklab, var(--primary) 25%, transparent),
+        transparent 60%
+      ),
+      radial-gradient(
+        35% 30% at 85% 30%,
+        color-mix(in oklab, var(--primary-glow) 20%, transparent),
+        transparent 60%
+      );
     filter: blur(40px);
     z-index: 0;
   }
@@ -201,13 +224,32 @@
   font-family: var(--font-sans);
   line-height: 1.7;
 }
-.prose-chat p { margin: 0.75em 0; }
-.prose-chat h1, .prose-chat h2, .prose-chat h3 { margin: 1.2em 0 0.5em; font-weight: 600; }
-.prose-chat h1 { font-size: 1.5rem; }
-.prose-chat h2 { font-size: 1.25rem; }
-.prose-chat h3 { font-size: 1.1rem; }
-.prose-chat ul, .prose-chat ol { margin: 0.75em 0; padding-left: 1.5em; }
-.prose-chat li { margin: 0.25em 0; }
+.prose-chat p {
+  margin: 0.75em 0;
+}
+.prose-chat h1,
+.prose-chat h2,
+.prose-chat h3 {
+  margin: 1.2em 0 0.5em;
+  font-weight: 600;
+}
+.prose-chat h1 {
+  font-size: 1.5rem;
+}
+.prose-chat h2 {
+  font-size: 1.25rem;
+}
+.prose-chat h3 {
+  font-size: 1.1rem;
+}
+.prose-chat ul,
+.prose-chat ol {
+  margin: 0.75em 0;
+  padding-left: 1.5em;
+}
+.prose-chat li {
+  margin: 0.25em 0;
+}
 .prose-chat code {
   font-family: var(--font-mono);
   font-size: 0.875em;
@@ -230,7 +272,11 @@
   padding: 0;
   font-size: 0.85em;
 }
-.prose-chat a { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+.prose-chat a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .prose-chat blockquote {
   border-left: 2px solid var(--primary);
   padding-left: 1em;
@@ -239,8 +285,12 @@
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 .shimmer {
   background: linear-gradient(
@@ -254,9 +304,23 @@
 }
 
 @keyframes pulse-dot {
-  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
-  40% { opacity: 1; transform: scale(1); }
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
-.dot-1 { animation: pulse-dot 1.2s infinite ease-in-out; }
-.dot-2 { animation: pulse-dot 1.2s infinite ease-in-out 0.15s; }
-.dot-3 { animation: pulse-dot 1.2s infinite ease-in-out 0.3s; }
+.dot-1 {
+  animation: pulse-dot 1.2s infinite ease-in-out;
+}
+.dot-2 {
+  animation: pulse-dot 1.2s infinite ease-in-out 0.15s;
+}
+.dot-3 {
+  animation: pulse-dot 1.2s infinite ease-in-out 0.3s;
+}

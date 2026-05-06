@@ -8,6 +8,7 @@ import { EmptyState } from "./EmptyState";
 import { MessageBubble } from "./MessageBubble";
 import { InputBar } from "./InputBar";
 import { ProjectView } from "../ProjectView";
+import { ProjectsList } from "../ProjectsList";
 import type { ToolMode } from "./ToolsPicker";
 
 function getGreeting(): string {
@@ -25,11 +26,7 @@ function buildContent(text: string, attachments: Attachment[]) {
 
   let composed = text;
   if (fileBlobs.length) {
-    composed +=
-      "\n\n" +
-      fileBlobs
-        .map((f) => `--- File: ${f.name} ---\n${f.text}`)
-        .join("\n\n");
+    composed += "\n\n" + fileBlobs.map((f) => `--- File: ${f.name} ---\n${f.text}`).join("\n\n");
   }
 
   if (!images.length) return composed;
@@ -92,9 +89,7 @@ export function ChatWindow() {
     };
     appendMessage(id, assistantMsg);
 
-    const project = projects.find(
-      (p) => p.id === chats.find((c) => c.id === id)?.projectId,
-    );
+    const project = projects.find((p) => p.id === chats.find((c) => c.id === id)?.projectId);
     const projectInstr = project?.instructions?.trim();
     const toolInstr =
       tool === "web_search"
@@ -106,15 +101,9 @@ export function ChatWindow() {
       .filter(Boolean)
       .join("\n\n");
 
-    const history = [
-      ...(chats.find((c) => c.id === id)?.messages ?? []),
-      userMsg,
-    ].map((m) => ({
+    const history = [...(chats.find((c) => c.id === id)?.messages ?? []), userMsg].map((m) => ({
       role: m.role,
-      content:
-        m.role === "user"
-          ? buildContent(m.content, m.attachments ?? [])
-          : m.content,
+      content: m.role === "user" ? buildContent(m.content, m.attachments ?? []) : m.content,
     }));
 
     setStreaming(true);
@@ -128,6 +117,7 @@ export function ChatWindow() {
           model,
           systemPrompt: finalSystem,
           temperature,
+          tool,
         }),
       });
 
@@ -184,24 +174,21 @@ export function ChatWindow() {
   };
 
   if (!chat && activeProjectId) {
+    if (activeProjectId === "all") {
+      return <ProjectsList />;
+    }
     return <ProjectView projectId={activeProjectId} />;
   }
 
   const isEmpty = !chat || chat.messages.length === 0;
 
-  const inputBar = (
-    <InputBar onSend={send} disabled={streaming} initialValue={prefill} />
-  );
+  const inputBar = <InputBar onSend={send} disabled={streaming} initialValue={prefill} />;
 
   return (
     <div className="bg-grain relative flex h-full min-h-0 flex-col bg-background">
       {isEmpty ? (
         <div className="min-h-0 flex-1 overflow-hidden">
-          <EmptyState
-            greeting={greeting}
-            onPick={(t) => setPrefill(t)}
-            inputSlot={inputBar}
-          />
+          <EmptyState greeting={greeting} onPick={(t) => setPrefill(t)} inputSlot={inputBar} />
         </div>
       ) : (
         <>

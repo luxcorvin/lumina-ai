@@ -1,17 +1,16 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import {
-  X,
-  User,
-  Palette,
-  Cpu,
-  MessageSquare,
-  Shield,
-  Bell,
-  Database,
-} from "lucide-react";
+import { X, User, Palette, Cpu, MessageSquare, Shield, Bell, Database } from "lucide-react";
 import { toast } from "sonner";
-import { useSettings, ACCENTS, type AccentColor, type Theme, type Density, type FontScale, type ModelId } from "@/lib/settings-store";
+import {
+  useSettings,
+  ACCENTS,
+  type AccentColor,
+  type Theme,
+  type Density,
+  type FontScale,
+  type ModelId,
+} from "@/lib/settings-store";
 import { MODELS } from "@/lib/models";
 import { useChatStore } from "@/lib/chat-store";
 import { cn } from "@/lib/utils";
@@ -117,7 +116,15 @@ export function SettingsModal({ open, onClose }: Props) {
 
 /* ============================ Tabs ============================ */
 
-function Section({ title, desc, children }: { title: string; desc?: string; children: React.ReactNode }) {
+function Section({
+  title,
+  desc,
+  children,
+}: {
+  title: string;
+  desc?: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="mb-7">
       <h3 className="font-display text-base font-semibold">{title}</h3>
@@ -127,7 +134,15 @@ function Section({ title, desc, children }: { title: string; desc?: string; chil
   );
 }
 
-function Row({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+function Row({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex items-start justify-between gap-6">
       <div className="min-w-0 flex-1">

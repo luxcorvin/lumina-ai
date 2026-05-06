@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { Plus, MessageSquare, Pencil, Trash2, FolderOpen, Sparkles } from "lucide-react";
 import { useChatStore } from "@/lib/chat-store";
-import { cn } from "@/lib/utils";
+import { cn, timeAgo } from "@/lib/utils";
 
 export function ProjectView({ projectId }: { projectId: string }) {
   const {
@@ -10,6 +10,7 @@ export function ProjectView({ projectId }: { projectId: string }) {
     chats,
     createChat,
     setActiveChat,
+    setActiveProject,
     updateProject,
     deleteProject,
     deleteChat,
@@ -34,6 +35,14 @@ export function ProjectView({ projectId }: { projectId: string }) {
     <div className="bg-grain relative h-full min-h-0 overflow-y-auto bg-background">
       <div className="mx-auto w-full max-w-3xl px-8 py-12">
         {/* Header */}
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          onClick={() => setActiveProject("all")}
+          className="mb-4 flex items-center gap-1.5 text-xs font-medium text-text-muted transition-colors hover:text-text-primary"
+        >
+          <FolderOpen size={14} /> Back to Projects
+        </motion.button>
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -183,7 +192,10 @@ export function ProjectView({ projectId }: { projectId: string }) {
                     <MessageSquare size={14} className="shrink-0 text-text-muted" />
                     <div className="min-w-0">
                       <div className="truncate text-sm font-medium">{c.title}</div>
-                      <div className="text-[11px] text-text-muted">
+                      <div className="mt-0.5 truncate text-xs text-text-secondary line-clamp-1">
+                        {c.messages.length > 0 ? c.messages[c.messages.length - 1].content : "Empty conversation"}
+                      </div>
+                      <div className="mt-1 text-[11px] text-text-muted">
                         {c.messages.length} {c.messages.length === 1 ? "message" : "messages"} · {timeAgo(c.updatedAt)}
                       </div>
                     </div>
@@ -203,15 +215,4 @@ export function ProjectView({ projectId }: { projectId: string }) {
       </div>
     </div>
   );
-}
-
-function timeAgo(ts: number): string {
-  const d = Date.now() - ts;
-  const m = Math.floor(d / 60000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  const days = Math.floor(h / 24);
-  return `${days}d ago`;
 }

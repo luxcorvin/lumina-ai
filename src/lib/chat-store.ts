@@ -30,8 +30,22 @@ export const useChatStore = create<ChatStore>()(
   persist(
     (set, get) => ({
       projects: [
-        { id: "p1", name: "Research", emoji: "🔬", color: "#10b97c", description: "Notes, sources, and explorations.", instructions: "" },
-        { id: "p2", name: "Writing", emoji: "✍️", color: "#38bdf8", description: "Drafts and editing.", instructions: "" },
+        {
+          id: "p1",
+          name: "Research",
+          emoji: "🔬",
+          color: "#10b97c",
+          description: "Notes, sources, and explorations.",
+          instructions: "",
+        },
+        {
+          id: "p2",
+          name: "Writing",
+          emoji: "✍️",
+          color: "#38bdf8",
+          description: "Drafts and editing.",
+          instructions: "",
+        },
       ],
       chats: [],
       activeChatId: null,
@@ -50,7 +64,8 @@ export const useChatStore = create<ChatStore>()(
         set({ chats: [chat, ...get().chats], activeChatId: id });
         return id;
       },
-      setActiveChat: (id) => set({ activeChatId: id, activeProjectId: id ? null : get().activeProjectId }),
+      setActiveChat: (id) =>
+        set({ activeChatId: id, activeProjectId: id ? null : get().activeProjectId }),
       setActiveProject: (id) => set({ activeProjectId: id, activeChatId: null }),
       appendMessage: (chatId, msg) =>
         set({

@@ -33,10 +33,7 @@ export function ModelPicker({ compact = false }: { compact?: boolean }) {
       >
         <Sparkles size={13} className="text-primary" />
         <span className="truncate">{current.label}</span>
-        <ChevronDown
-          size={12}
-          className={cn("transition-transform", open && "rotate-180")}
-        />
+        <ChevronDown size={12} className={cn("transition-transform", open && "rotate-180")} />
       </button>
 
       <AnimatePresence>
@@ -54,9 +51,7 @@ export function ModelPicker({ compact = false }: { compact?: boolean }) {
                 <div className="text-[11px] font-semibold tracking-wider text-text-muted uppercase">
                   Choose model
                 </div>
-                <div className="mt-0.5 text-xs text-text-secondary">
-                  Pick what fits your task.
-                </div>
+                <div className="mt-0.5 text-xs text-text-secondary">Pick what fits your task.</div>
               </div>
               <div className="max-h-[400px] overflow-y-auto py-1">
                 {(["frontier", "fast", "reasoning"] as const).map((fam) => {
@@ -98,9 +93,7 @@ export function ModelPicker({ compact = false }: { compact?: boolean }) {
                                 {m.provider} · {m.description}
                               </div>
                             </div>
-                            {active && (
-                              <Check size={14} className="mt-1 shrink-0 text-primary" />
-                            )}
+                            {active && <Check size={14} className="mt-1 shrink-0 text-primary" />}
                           </button>
                         );
                       })}

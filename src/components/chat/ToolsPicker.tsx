@@ -93,18 +93,14 @@ export function ToolsPicker({ value, onChange }: Props) {
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-text-primary">
-                            {t.label}
-                          </span>
+                          <span className="text-sm font-medium text-text-primary">{t.label}</span>
                           {t.badge && (
                             <span className="rounded-full border border-border bg-surface-2 px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-text-secondary uppercase">
                               {t.badge}
                             </span>
                           )}
                         </div>
-                        <div className="mt-0.5 text-[11px] text-text-muted">
-                          {t.desc}
-                        </div>
+                        <div className="mt-0.5 text-[11px] text-text-muted">{t.desc}</div>
                       </div>
                       {isActive && <Check size={14} className="mt-2 text-primary" />}
                     </button>
