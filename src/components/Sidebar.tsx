@@ -363,6 +363,36 @@ export function Sidebar({ collapsed, onToggle, onOpenSettings }: SidebarProps) {
   );
 }
 
+function CollapsedIcon({
+  icon,
+  label,
+  onClick,
+  active,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick?: () => void;
+  active?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={label}
+      className={cn(
+        "group relative grid h-9 w-9 place-items-center rounded-lg transition-colors",
+        active
+          ? "bg-surface-3 text-text-primary"
+          : "text-text-secondary hover:bg-surface-3 hover:text-text-primary",
+      )}
+    >
+      {icon}
+      <span className="pointer-events-none absolute left-full z-50 ml-2 hidden whitespace-nowrap rounded-md border border-border bg-surface-2 px-2 py-1 text-[11px] text-text-primary shadow-lg group-hover:block">
+        {label}
+      </span>
+    </button>
+  );
+}
+
 function PopupItem({
   icon,
   label,
