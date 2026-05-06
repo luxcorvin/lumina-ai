@@ -1,63 +1,74 @@
 import { motion } from "motion/react";
-import { Sparkles, Code2, BookOpen, Lightbulb, PenLine } from "lucide-react";
+import { PenLine, GraduationCap, Code2, Coffee, Sparkles } from "lucide-react";
 
-const SUGGESTIONS = [
-  { icon: Lightbulb, title: "Brainstorm ideas", subtitle: "for a weekend side project" },
-  { icon: PenLine, title: "Draft a message", subtitle: "to reschedule a meeting" },
-  { icon: Code2, title: "Explain this code", subtitle: "and suggest improvements" },
-  { icon: BookOpen, title: "Summarize an article", subtitle: "in three short bullets" },
+const PILLS = [
+  { icon: PenLine, label: "Write", prompt: "Help me write " },
+  { icon: GraduationCap, label: "Learn", prompt: "Teach me about " },
+  { icon: Code2, label: "Code", prompt: "Write code that " },
+  { icon: Coffee, label: "Life stuff", prompt: "I need advice on " },
+  { icon: Sparkles, label: "Surprise me", prompt: "Surprise me with something interesting" },
 ];
 
 interface Props {
   greeting: string;
   onPick: (text: string) => void;
+  inputSlot?: React.ReactNode;
 }
 
-export function EmptyState({ greeting, onPick }: Props) {
+export function EmptyState({ greeting, onPick, inputSlot }: Props) {
   return (
-    <div className="ambient-glow relative flex h-full flex-col items-center justify-center px-6">
-      <motion.div
-        initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 mb-10 text-center"
-      >
-        <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-2/60 px-3 py-1 text-xs text-text-secondary backdrop-blur">
-          <Sparkles size={12} className="text-primary" />
-          Aether · Gemini 3 Flash
-        </div>
-        <h1 className="text-balance font-display text-4xl font-semibold tracking-tight md:text-5xl">
-          {greeting || "Hello"}
-        </h1>
-        <p className="mt-3 text-text-secondary">What would you like to think about today?</p>
-      </motion.div>
+    <div className="ambient-glow relative flex h-full w-full flex-col items-center justify-center px-6">
+      <div className="relative z-10 w-full max-w-3xl">
+        <motion.div
+          initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          className="mb-8 flex items-center justify-center gap-3"
+        >
+          <span
+            aria-hidden
+            className="inline-block h-7 w-7 shrink-0 rounded-full"
+            style={{ background: "var(--gradient-brand)", boxShadow: "var(--shadow-elegant)" }}
+          />
+          <h1 className="text-balance font-display text-3xl font-semibold tracking-tight md:text-[40px]">
+            {greeting || "Hello"}, ready when you are.
+          </h1>
+        </motion.div>
 
-      <motion.div
-        initial="initial"
-        animate="animate"
-        variants={{ animate: { transition: { staggerChildren: 0.05, delayChildren: 0.2 } } }}
-        className="relative z-10 grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2"
-      >
-        {SUGGESTIONS.map((s) => (
-          <motion.button
-            key={s.title}
-            variants={{
-              initial: { opacity: 0, y: 10 },
-              animate: { opacity: 1, y: 0 },
-            }}
-            whileHover={{ y: -2 }}
-            onClick={() => onPick(`${s.title} ${s.subtitle}`)}
-            className="group rounded-2xl border border-border bg-surface-2/60 p-4 text-left backdrop-blur transition-all hover:border-border-hover hover:bg-surface-2 hover:shadow-lg"
+        {inputSlot && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
           >
-            <s.icon
-              size={18}
-              className="text-primary transition-transform group-hover:scale-110"
-            />
-            <div className="mt-3 text-sm font-medium">{s.title}</div>
-            <div className="text-xs text-text-secondary">{s.subtitle}</div>
-          </motion.button>
-        ))}
-      </motion.div>
+            {inputSlot}
+          </motion.div>
+        )}
+
+        <motion.div
+          initial="initial"
+          animate="animate"
+          variants={{ animate: { transition: { staggerChildren: 0.04, delayChildren: 0.25 } } }}
+          className="mt-2 flex flex-wrap items-center justify-center gap-2"
+        >
+          {PILLS.map((p) => (
+            <motion.button
+              key={p.label}
+              variants={{
+                initial: { opacity: 0, y: 6 },
+                animate: { opacity: 1, y: 0 },
+              }}
+              whileHover={{ y: -1 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => onPick(p.prompt)}
+              className="group inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-2/60 px-3.5 py-1.5 text-xs font-medium text-text-secondary backdrop-blur transition-all hover:border-border-hover hover:bg-surface-2 hover:text-text-primary"
+            >
+              <p.icon size={13} className="text-primary" />
+              {p.label}
+            </motion.button>
+          ))}
+        </motion.div>
+      </div>
     </div>
   );
 }
