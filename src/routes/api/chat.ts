@@ -1,24 +1,88 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-async function performWikipediaSearch(query: string) {
+interface SearchHit {
+  title: string;
+  url: string;
+  snippet: string;
+}
+
+const enc = new TextEncoder();
+const sse = (controller: ReadableStreamDefaultController, text: string) =>
+  controller.enqueue(
+    enc.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\n`),
+  );
+
+async function ddgSearch(query: string, n = 4): Promise<SearchHit[]> {
+  try {
+    const r = await fetch(
+      `https://duckduckgo.com/html/?q=${encodeURIComponent(query)}`,
+      { headers: { "User-Agent": "Mozilla/5.0 AetherResearch/1.0" } },
+    );
+    const html = await r.text();
+    const hits: SearchHit[] = [];
+    const re =
+      /<a[^>]+class="result__a"[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>[\s\S]*?<a[^>]+class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g;
+    let m;
+    while ((m = re.exec(html)) && hits.length < n) {
+      let url = m[1];
+      const u = url.match(/uddg=([^&]+)/);
+      if (u) url = decodeURIComponent(u[1]);
+      const title = m[2].replace(/<[^>]+>/g, "").trim();
+      const snippet = m[3].replace(/<[^>]+>/g, "").trim();
+      if (url.startsWith("http") && title) hits.push({ url, title, snippet });
+    }
+    return hits;
+  } catch {
+    return [];
+  }
+}
+
+async function wikiSearch(query: string): Promise<SearchHit | null> {
   try {
     const s = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&utf8=&format=json`,
-    );
-    const sData = await s.json();
-    if (sData.query?.search?.length > 0) {
-      const top = sData.query.search[0];
-      const e = await fetch(
-        `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exsentences=10&exlimit=1&titles=${encodeURIComponent(top.title)}&explaintext=1&formatversion=2&format=json`,
-      );
-      const eData = await e.json();
-      if (eData.query?.pages?.[0]?.extract) {
-        return `Source: Wikipedia (${top.title})\nContent: ${eData.query.pages[0].extract}`;
-      }
-    }
+      `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&utf8=&format=json&srlimit=1`,
+    ).then((r) => r.json());
+    const top = s.query?.search?.[0];
+    if (!top) return null;
+    const e = await fetch(
+      `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exsentences=8&exlimit=1&titles=${encodeURIComponent(top.title)}&explaintext=1&formatversion=2&format=json`,
+    ).then((r) => r.json());
+    const extract = e.query?.pages?.[0]?.extract ?? "";
+    return {
+      title: `Wikipedia — ${top.title}`,
+      url: `https://en.wikipedia.org/wiki/${encodeURIComponent(top.title.replace(/ /g, "_"))}`,
+      snippet: extract.slice(0, 1200),
+    };
+  } catch {
     return null;
-  } catch (e) {
-    return null;
+  }
+}
+
+async function planQueries(userText: string, apiKey: string): Promise<string[]> {
+  try {
+    const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        temperature: 0.2,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a research planner. Given a user prompt, output 3-4 distinct, highly targeted web search queries to investigate it from multiple angles. Output ONLY a JSON array of strings, no prose.",
+          },
+          { role: "user", content: userText },
+        ],
+      }),
+    });
+    const data = await r.json();
+    const text: string = data.choices?.[0]?.message?.content?.trim() ?? "";
+    const m = text.match(/\[[\s\S]*\]/);
+    const arr = JSON.parse(m ? m[0] : text);
+    return Array.isArray(arr) ? arr.slice(0, 4).map(String) : [userText];
+  } catch {
+    return [userText];
   }
 }
 
@@ -46,123 +110,138 @@ export const Route = createFileRoute("/api/chat")({
           if (tool === "deep_research") {
             const stream = new ReadableStream({
               async start(controller) {
-                const enqueueMessage = (text: string) => {
-                  controller.enqueue(
-                    new TextEncoder().encode(
-                      `data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\n`,
-                    ),
-                  );
-                };
-
-                enqueueMessage(">*Initiating deep research...*\n\n");
-
                 try {
-                  const lastUserMessage = messages[messages.length - 1].content;
-                  const userText =
-                    typeof lastUserMessage === "string"
-                      ? lastUserMessage
-                      : JSON.stringify(lastUserMessage);
+                  const last = messages[messages.length - 1].content;
+                  const userText = typeof last === "string" ? last : JSON.stringify(last);
 
-                  enqueueMessage(">*Generating search strategies...*\n\n");
-                  const qResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-                    method: "POST",
-                    headers: {
-                      Authorization: `Bearer ${apiKey}`,
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      model: "google/gemini-3-flash-preview",
-                      messages: [
-                        {
-                          role: "system",
-                          content:
-                            "You are a research agent. Generate up to 3 Wikipedia search queries to investigate the user's prompt. Output ONLY a valid JSON array of strings.",
-                        },
-                        { role: "user", content: userText },
-                      ],
-                      temperature: 0.1,
-                    }),
-                  });
-                  const qData = await qResp.json();
-                  let queries: string[] = [];
-                  try {
-                    const text = qData.choices?.[0]?.message?.content?.trim() || "";
-                    const match = text.match(/\[.*\]/s);
-                    queries = JSON.parse(match ? match[0] : text);
-                    if (!Array.isArray(queries)) queries = [userText];
-                  } catch (e) {
-                    queries = [userText];
-                  }
-
-                  enqueueMessage(
-                    `>*Executing searches for: ${queries.slice(0, 3).join(", ")}...*\n\n`,
+                  sse(controller, "> 🔬 **Deep Research**\n\n");
+                  sse(controller, "> _Step 1 — Planning search strategy…_\n\n");
+                  const queries = await planQueries(userText, apiKey);
+                  sse(
+                    controller,
+                    queries.map((q, i) => `> ${i + 1}. \`${q}\``).join("\n") + "\n\n",
                   );
-                  const results = [];
-                  for (const q of queries.slice(0, 3)) {
-                    const res = await performWikipediaSearch(q);
-                    if (res) results.push(res);
+
+                  sse(controller, `> _Step 2 — Searching the web (${queries.length} queries)…_\n\n`);
+                  const allHits: SearchHit[] = [];
+                  for (const q of queries) {
+                    const [web, wiki] = await Promise.all([ddgSearch(q, 3), wikiSearch(q)]);
+                    if (wiki) allHits.push(wiki);
+                    allHits.push(...web);
                   }
+                  // dedupe by url
+                  const seen = new Set<string>();
+                  const sources = allHits.filter((h) => {
+                    if (seen.has(h.url)) return false;
+                    seen.add(h.url);
+                    return true;
+                  }).slice(0, 12);
 
-                  enqueueMessage(">*Synthesizing findings...*\n\n---\n\n");
+                  sse(controller, `> _Found ${sources.length} sources._\n\n`);
+                  sse(controller, "> _Step 3 — Synthesizing report with citations…_\n\n---\n\n");
 
-                  const researchContext =
-                    "DEEP RESEARCH RESULTS:\n\n" +
-                    (results.length > 0 ? results.join("\n\n") : "No relevant information found.");
+                  const sourceBlock = sources
+                    .map(
+                      (s, i) =>
+                        `[${i + 1}] ${s.title}\nURL: ${s.url}\nExcerpt: ${s.snippet}`,
+                    )
+                    .join("\n\n");
+
                   finalMessages.splice(finalMessages.length - 1, 0, {
                     role: "system",
-                    content: researchContext,
+                    content:
+                      "You are now synthesizing a DEEP RESEARCH report. Use ONLY the provided sources. " +
+                      "Cite claims inline using bracketed numbers like [1], [3]. " +
+                      "Structure: ## Executive Summary, ## Key Findings (bulleted), ## Analysis, ## Open Questions. " +
+                      "Do NOT include a sources list at the end — the app appends it.\n\nSOURCES:\n\n" +
+                      sourceBlock,
                   });
-                } catch (e) {
-                  enqueueMessage(
-                    ">*Deep research failed, proceeding with general knowledge...*\n\n---\n\n",
+
+                  const upstream = await fetch(
+                    "https://ai.gateway.lovable.dev/v1/chat/completions",
+                    {
+                      method: "POST",
+                      headers: {
+                        Authorization: `Bearer ${apiKey}`,
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        model: model || "google/gemini-3-flash-preview",
+                        stream: true,
+                        temperature: typeof temperature === "number" ? temperature : 0.4,
+                        messages: finalMessages,
+                      }),
+                    },
                   );
-                }
 
-                const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-                  method: "POST",
-                  headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    model: model || "google/gemini-3-flash-preview",
-                    stream: true,
-                    temperature: typeof temperature === "number" ? temperature : undefined,
-                    messages: finalMessages,
-                  }),
-                });
+                  if (!upstream.ok || !upstream.body) {
+                    sse(controller, "_Synthesis failed._");
+                    controller.close();
+                    return;
+                  }
 
-                if (!upstream.ok || !upstream.body) {
-                  enqueueMessage("Error fetching upstream response.");
+                  // pipe upstream SSE through, stripping trailing [DONE]
+                  const reader = upstream.body.getReader();
+                  const dec = new TextDecoder();
+                  let buf = "";
+                  while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    buf += dec.decode(value, { stream: true });
+                    let nl: number;
+                    while ((nl = buf.indexOf("\n")) !== -1) {
+                      const line = buf.slice(0, nl);
+                      buf = buf.slice(nl + 1);
+                      if (line.startsWith("data: ") && line.includes("[DONE]")) continue;
+                      controller.enqueue(enc.encode(line + "\n"));
+                    }
+                  }
+
+                  // append sources section
+                  if (sources.length) {
+                    let md = "\n\n---\n\n## Sources\n\n";
+                    sources.forEach((s, i) => {
+                      md += `${i + 1}. [${s.title}](${s.url})\n`;
+                    });
+                    sse(controller, md);
+                  }
+                  controller.enqueue(enc.encode("data: [DONE]\n\n"));
+                } catch (e) {
+                  console.error("deep_research error", e);
+                  sse(controller, "\n\n_Deep research encountered an error._");
+                } finally {
                   controller.close();
-                  return;
                 }
-
-                const reader = upstream.body.getReader();
-                while (true) {
-                  const { done, value } = await reader.read();
-                  if (done) break;
-                  controller.enqueue(value);
-                }
-                controller.close();
               },
             });
 
             return new Response(stream, {
-              headers: {
-                "Content-Type": "text/event-stream",
-                "Cache-Control": "no-cache",
-              },
+              headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache" },
             });
           }
 
-          // Normal path
+          if (tool === "web_search") {
+            // lightweight grounding: one search round, inject as system context
+            const last = messages[messages.length - 1].content;
+            const userText = typeof last === "string" ? last : JSON.stringify(last);
+            const [web, wiki] = await Promise.all([ddgSearch(userText, 4), wikiSearch(userText)]);
+            const hits = [wiki, ...web].filter(Boolean) as SearchHit[];
+            if (hits.length) {
+              const block = hits
+                .map((s, i) => `[${i + 1}] ${s.title} — ${s.url}\n${s.snippet}`)
+                .join("\n\n");
+              finalMessages.splice(finalMessages.length - 1, 0, {
+                role: "system",
+                content:
+                  "WEB SEARCH RESULTS — cite using [n] inline and end with a short '## Sources' list with markdown links.\n\n" +
+                  block,
+              });
+            }
+          }
+
           const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
             method: "POST",
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-              "Content-Type": "application/json",
-            },
+            headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
             body: JSON.stringify({
               model: model || "google/gemini-3-flash-preview",
               stream: true,
@@ -186,10 +265,7 @@ export const Route = createFileRoute("/api/chat")({
           }
 
           return new Response(upstream.body, {
-            headers: {
-              "Content-Type": "text/event-stream",
-              "Cache-Control": "no-cache",
-            },
+            headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache" },
           });
         } catch (err) {
           console.error("chat route error", err);
