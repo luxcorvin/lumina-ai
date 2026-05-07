@@ -28,6 +28,7 @@ export interface SettingsState {
   maxTokens: number;
   systemPrompt: string;
   streaming: boolean;
+  extendedThinking: boolean;
 
   // Chat
   sendOnEnter: boolean;
@@ -66,6 +67,7 @@ const DEFAULTS = {
   maxTokens: 2048,
   systemPrompt: "",
   streaming: true,
+  extendedThinking: false,
 
   sendOnEnter: true,
   showTimestamps: false,
