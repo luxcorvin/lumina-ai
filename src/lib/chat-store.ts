@@ -163,10 +163,10 @@ export const useChatStore = create<ChatStore>()(
         const s = state as { projects?: Project[] } | undefined;
         if (s?.projects) {
           s.projects = s.projects.map((p) => ({
-            memoryScope: "default",
-            files: [],
-            createdAt: Date.now(),
             ...p,
+            memoryScope: p.memoryScope ?? "default",
+            files: p.files ?? [],
+            createdAt: p.createdAt ?? Date.now(),
           }));
         }
         return s as never;
