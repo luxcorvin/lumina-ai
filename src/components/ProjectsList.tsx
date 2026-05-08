@@ -2,25 +2,14 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { FolderOpen, Plus, Trash2, Pencil, MessageSquare } from "lucide-react";
 import { useChatStore } from "@/lib/chat-store";
+import { useUIStore } from "@/lib/ui-store";
 import { timeAgo } from "@/lib/utils";
 
 export function ProjectsList() {
-  const { projects, chats, createProject, setActiveProject, deleteProject, renameProject } =
-    useChatStore();
-  const [creating, setCreating] = useState(false);
-  const [name, setName] = useState("");
+  const { projects, chats, setActiveProject, deleteProject, renameProject } = useChatStore();
+  const openCreateProject = useUIStore((s) => s.openCreateProject);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const n = name.trim();
-    if (!n) return setCreating(false);
-    const id = createProject(n);
-    setName("");
-    setCreating(false);
-    setActiveProject(id);
-  };
 
   return (
     <div className="bg-grain relative h-full min-h-0 overflow-y-auto bg-background">
@@ -33,11 +22,11 @@ export function ProjectsList() {
           <div>
             <h1 className="font-display text-3xl font-semibold tracking-tight">Projects</h1>
             <p className="mt-1 text-sm text-text-muted">
-              Keep chats organized with custom instructions and context.
+              Keep chats, files, and custom instructions in one place.
             </p>
           </div>
           <button
-            onClick={() => setCreating(true)}
+            onClick={openCreateProject}
             className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-transform hover:scale-[1.02]"
             style={{ background: "var(--gradient-brand)" }}
           >
@@ -45,55 +34,22 @@ export function ProjectsList() {
           </button>
         </motion.div>
 
-        <AnimatePresence>
-          {creating && (
-            <motion.form
-              initial={{ opacity: 0, y: -6, height: 0 }}
-              animate={{ opacity: 1, y: 0, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              onSubmit={submit}
-              className="mb-6 overflow-hidden"
-            >
-              <div className="flex items-center gap-2 rounded-xl border border-border bg-surface-2 p-2">
-                <input
-                  autoFocus
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Project name…"
-                  onKeyDown={(e) => e.key === "Escape" && setCreating(false)}
-                  className="flex-1 bg-transparent px-2 text-sm focus:outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCreating(false);
-                    setName("");
-                  }}
-                  className="rounded-md px-3 py-1.5 text-xs text-text-secondary hover:bg-surface-3"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90"
-                >
-                  Create
-                </button>
-              </div>
-            </motion.form>
-          )}
-        </AnimatePresence>
-
-        {projects.length === 0 && !creating ? (
-          <div className="mt-12 rounded-2xl border border-dashed border-border bg-surface-1/40 px-6 py-16 text-center">
+        {projects.length === 0 ? (
+          <button
+            onClick={openCreateProject}
+            className="mt-12 block w-full rounded-2xl border border-dashed border-border bg-surface-1/40 px-6 py-16 text-center transition-colors hover:border-border-hover hover:bg-surface-2/40"
+          >
             <FolderOpen size={32} className="mx-auto mb-3 text-text-muted" />
             <h3 className="font-display text-lg font-medium text-text-primary">No projects yet</h3>
             <p className="mt-1 text-sm text-text-secondary">
               Create your first project to start organizing your work.
             </p>
-          </div>
+          </button>
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <AnimatePresence>
+              {/* placeholder to make AnimatePresence happy */}
+            </AnimatePresence>
             {projects.map((p) => {
               const projectChats = chats.filter((c) => c.projectId === p.id);
               const lastUpdated = projectChats[0]?.updatedAt;
