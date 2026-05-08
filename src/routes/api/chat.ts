@@ -134,13 +134,10 @@ export const Route = createFileRoute("/api/chat")({
                     queries.map((q, i) => `> ${i + 1}. \`${q}\``).join("\n") + "\n\n",
                   );
 
-                  sse(controller, `> _Step 2 — Searching the web (${queries.length} queries)…_\n\n`);
+                  sse(controller, `> _Step 2 — Searching Google (${queries.length} queries)…_\n\n`);
                   const allHits: SearchHit[] = [];
-                  for (const q of queries) {
-                    const [web, wiki] = await Promise.all([ddgSearch(q, 3), wikiSearch(q)]);
-                    if (wiki) allHits.push(wiki);
-                    allHits.push(...web);
-                  }
+                  const perQuery = await Promise.all(queries.map((q) => googleSearch(q, 5)));
+                  for (const hits of perQuery) allHits.push(...hits);
                   // dedupe by url
                   const seen = new Set<string>();
                   const sources = allHits.filter((h) => {
