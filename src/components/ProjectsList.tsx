@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { FolderOpen, Plus, Trash2, Pencil, MessageSquare } from "lucide-react";
 import { useChatStore } from "@/lib/chat-store";
 import { useUIStore } from "@/lib/ui-store";
