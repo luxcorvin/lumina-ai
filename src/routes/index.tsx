@@ -5,6 +5,8 @@ import { Sidebar } from "@/components/Sidebar";
 import { ChatWindow } from "@/components/chat/ChatWindow";
 import { SettingsModal } from "@/components/SettingsModal";
 import { ThemeBridge } from "@/components/ThemeBridge";
+import { CreateProjectModal } from "@/components/CreateProjectModal";
+import { useUIStore } from "@/lib/ui-store";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -13,6 +15,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   const [collapsed, setCollapsed] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const { createProjectOpen, closeCreateProject } = useUIStore();
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
@@ -37,6 +40,7 @@ function Index() {
         }}
       />
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <CreateProjectModal open={createProjectOpen} onClose={closeCreateProject} />
     </div>
   );
 }

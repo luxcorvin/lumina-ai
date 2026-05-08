@@ -17,6 +17,7 @@ import {
 import { Logo } from "./Logo";
 import { useChatStore } from "@/lib/chat-store";
 import { groupChatsByDate } from "@/lib/chat-types";
+import { useUIStore } from "@/lib/ui-store";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
@@ -34,14 +35,12 @@ export function Sidebar({ collapsed, onToggle, onOpenSettings }: SidebarProps) {
     createChat,
     setActiveChat,
     setActiveProject,
-    createProject,
     deleteChat,
     deleteProject,
   } = useChatStore();
+  const openCreateProject = useUIStore((s) => s.openCreateProject);
 
   const [projectsOpen, setProjectsOpen] = useState(true);
-  const [creatingProject, setCreatingProject] = useState(false);
-  const [newProjectName, setNewProjectName] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
   const [search, setSearch] = useState("");
   const profileRef = useRef<HTMLDivElement>(null);
@@ -169,8 +168,8 @@ export function Sidebar({ collapsed, onToggle, onOpenSettings }: SidebarProps) {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setCreatingProject(true);
                     setProjectsOpen(true);
+                    openCreateProject();
                   }}
                   className="grid h-6 w-6 place-items-center rounded text-text-muted opacity-0 transition-opacity hover:bg-surface-3 hover:text-text-primary group-hover:opacity-100"
                   aria-label="New project"
@@ -202,29 +201,13 @@ export function Sidebar({ collapsed, onToggle, onOpenSettings }: SidebarProps) {
                           }}
                         />
                       ))}
-                      {creatingProject && (
-                        <motion.form
-                          initial={{ opacity: 0, y: -4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            if (newProjectName.trim()) {
-                              createProject(newProjectName.trim());
-                              setNewProjectName("");
-                            }
-                            setCreatingProject(false);
-                          }}
-                          className="px-2 py-1"
+                      {projects.length === 0 && (
+                        <button
+                          onClick={openCreateProject}
+                          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-text-muted hover:bg-surface-2 hover:text-text-primary"
                         >
-                          <input
-                            autoFocus
-                            value={newProjectName}
-                            onChange={(e) => setNewProjectName(e.target.value)}
-                            onBlur={() => setCreatingProject(false)}
-                            placeholder="Project name…"
-                            className="w-full rounded-md border border-border bg-surface-2 px-2 py-1.5 text-sm focus:border-primary focus:outline-none"
-                          />
-                        </motion.form>
+                          <Plus size={11} /> New project
+                        </button>
                       )}
                     </div>
                   </motion.div>

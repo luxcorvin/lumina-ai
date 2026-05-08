@@ -28,6 +28,17 @@ export interface Chat {
   updatedAt: number;
 }
 
+export type MemoryScope = "default" | "project_only";
+
+export interface ProjectFile {
+  id: string;
+  name: string;
+  mime: string;
+  size: number;
+  text?: string;
+  addedAt: number;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -35,6 +46,9 @@ export interface Project {
   color: string;
   description?: string;
   instructions?: string;
+  memoryScope: MemoryScope;
+  files: ProjectFile[];
+  createdAt: number;
   pinned?: boolean;
 }
 

@@ -8,16 +8,20 @@ import { AttachmentChips } from "./AttachmentChips";
 import { getModel } from "@/lib/models";
 import { useSettings } from "@/lib/settings-store";
 import { uid, type Attachment } from "@/lib/chat-types";
+import { cn } from "@/lib/utils";
 
 interface Props {
   onSend: (text: string, attachments: Attachment[], tool: ToolMode) => void;
   disabled?: boolean;
   initialValue?: string;
+  placeholder?: string;
+  hideFooter?: boolean;
+  compact?: boolean;
 }
 
 const MAX_BYTES = 8 * 1024 * 1024; // 8MB per file
 
-export function InputBar({ onSend, disabled, initialValue }: Props) {
+export function InputBar({ onSend, disabled, initialValue, placeholder, hideFooter, compact }: Props) {
   const [value, setValue] = useState(initialValue ?? "");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [tool, setTool] = useState<ToolMode>(null);
@@ -90,7 +94,10 @@ export function InputBar({ onSend, disabled, initialValue }: Props) {
 
   return (
     <div
-      className="relative mx-auto w-full max-w-3xl px-4 pb-6"
+      className={cn(
+        "relative mx-auto w-full max-w-3xl px-4",
+        compact ? "pb-0" : "pb-6",
+      )}
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
         e.preventDefault();
@@ -120,7 +127,7 @@ export function InputBar({ onSend, disabled, initialValue }: Props) {
               submit();
             }
           }}
-          placeholder="Message Aether…"
+          placeholder={placeholder ?? "Message Aether…"}
           className="block max-h-[220px] w-full resize-none bg-transparent px-5 pt-4 pb-2 text-[15px] leading-6 placeholder:text-text-muted focus:outline-none"
         />
         <div className="flex items-center justify-between px-3 pt-1 pb-3">
@@ -170,9 +177,11 @@ export function InputBar({ onSend, disabled, initialValue }: Props) {
           </motion.button>
         </div>
       </div>
-      <div className="mt-2 text-center text-[11px] text-text-muted">
-        Aether can make mistakes. Verify important info.
-      </div>
+      {!hideFooter && (
+        <div className="mt-2 text-center text-[11px] text-text-muted">
+          Aether can make mistakes. Verify important info.
+        </div>
+      )}
     </div>
   );
 }
