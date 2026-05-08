@@ -233,8 +233,7 @@ export const Route = createFileRoute("/api/chat")({
             // lightweight grounding: one search round, inject as system context
             const last = messages[messages.length - 1].content;
             const userText = typeof last === "string" ? last : JSON.stringify(last);
-            const [web, wiki] = await Promise.all([ddgSearch(userText, 4), wikiSearch(userText)]);
-            const hits = [wiki, ...web].filter(Boolean) as SearchHit[];
+            const hits = await googleSearch(userText, 6);
             if (hits.length) {
               const block = hits
                 .map((s, i) => `[${i + 1}] ${s.title} — ${s.url}\n${s.snippet}`)
