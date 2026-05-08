@@ -47,9 +47,6 @@ export function ProjectsList() {
           </button>
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <AnimatePresence>
-              {/* placeholder to make AnimatePresence happy */}
-            </AnimatePresence>
             {projects.map((p) => {
               const projectChats = chats.filter((c) => c.projectId === p.id);
               const lastUpdated = projectChats[0]?.updatedAt;
