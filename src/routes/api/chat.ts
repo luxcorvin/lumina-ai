@@ -12,49 +12,61 @@ const sse = (controller: ReadableStreamDefaultController, text: string) =>
     enc.encode(`data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\n`),
   );
 
-async function ddgSearch(query: string, n = 4): Promise<SearchHit[]> {
-  try {
-    const r = await fetch(
-      `https://duckduckgo.com/html/?q=${encodeURIComponent(query)}`,
-      { headers: { "User-Agent": "Mozilla/5.0 AetherResearch/1.0" } },
-    );
-    const html = await r.text();
-    const hits: SearchHit[] = [];
-    const re =
-      /<a[^>]+class="result__a"[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>[\s\S]*?<a[^>]+class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g;
-    let m;
-    while ((m = re.exec(html)) && hits.length < n) {
-      let url = m[1];
-      const u = url.match(/uddg=([^&]+)/);
-      if (u) url = decodeURIComponent(u[1]);
-      const title = m[2].replace(/<[^>]+>/g, "").trim();
-      const snippet = m[3].replace(/<[^>]+>/g, "").trim();
-      if (url.startsWith("http") && title) hits.push({ url, title, snippet });
-    }
-    return hits;
-  } catch {
-    return [];
-  }
+const UA =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
+
+function decodeEntities(s: string): string {
+  return s
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ");
 }
 
-async function wikiSearch(query: string): Promise<SearchHit | null> {
+async function googleSearch(query: string, n = 5): Promise<SearchHit[]> {
   try {
-    const s = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&utf8=&format=json&srlimit=1`,
-    ).then((r) => r.json());
-    const top = s.query?.search?.[0];
-    if (!top) return null;
-    const e = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exsentences=8&exlimit=1&titles=${encodeURIComponent(top.title)}&explaintext=1&formatversion=2&format=json`,
-    ).then((r) => r.json());
-    const extract = e.query?.pages?.[0]?.extract ?? "";
-    return {
-      title: `Wikipedia — ${top.title}`,
-      url: `https://en.wikipedia.org/wiki/${encodeURIComponent(top.title.replace(/ /g, "_"))}`,
-      snippet: extract.slice(0, 1200),
-    };
-  } catch {
-    return null;
+    const r = await fetch(
+      `https://www.google.com/search?q=${encodeURIComponent(query)}&hl=en&num=${n + 5}`,
+      {
+        headers: {
+          "User-Agent": UA,
+          Accept: "text/html,application/xhtml+xml",
+          "Accept-Language": "en-US,en;q=0.9",
+        },
+      },
+    );
+    if (!r.ok) return [];
+    const html = await r.text();
+    const hits: SearchHit[] = [];
+    const seen = new Set<string>();
+    // Match Google result blocks: <a href="/url?q=...">...<h3>title</h3>
+    const linkRe = /<a[^>]+href="\/url\?q=([^"&]+)[^"]*"[^>]*>[\s\S]*?<h3[^>]*>([\s\S]*?)<\/h3>/g;
+    let m: RegExpExecArray | null;
+    while ((m = linkRe.exec(html)) && hits.length < n) {
+      const url = decodeURIComponent(m[1]);
+      if (
+        !url.startsWith("http") ||
+        seen.has(url) ||
+        url.includes("google.com/") ||
+        url.includes("youtube.com/")
+      )
+        continue;
+      seen.add(url);
+      const title = decodeEntities(m[2].replace(/<[^>]+>/g, "")).trim();
+      // Try to find a snippet near this match
+      const tail = html.slice(m.index, m.index + 2000);
+      const sm =
+        tail.match(/<div[^>]+class="VwiC3b[^"]*"[^>]*>([\s\S]*?)<\/div>/) ||
+        tail.match(/<span[^>]+class="aCOpRe[^"]*"[^>]*>([\s\S]*?)<\/span>/);
+      const snippet = sm ? decodeEntities(sm[1].replace(/<[^>]+>/g, "")).trim() : "";
+      if (title) hits.push({ url, title, snippet });
+    }
+    return hits;
+  } catch (e) {
+    console.error("googleSearch failed", e);
+    return [];
   }
 }
 
