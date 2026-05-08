@@ -18,7 +18,9 @@ interface ChatStore {
   deleteChat: (chatId: string) => void;
   moveChatToProject: (chatId: string, projectId: string | null) => void;
 
-  createProject: (name: string, emoji?: string) => string;
+  createProject: (name: string, opts?: { emoji?: string; memoryScope?: Project["memoryScope"]; description?: string }) => string;
+  addProjectFile: (projectId: string, file: import("./chat-types").ProjectFile) => void;
+  removeProjectFile: (projectId: string, fileId: string) => void;
   renameProject: (id: string, name: string) => void;
   updateProject: (id: string, patch: Partial<Project>) => void;
   deleteProject: (id: string) => void;
@@ -37,6 +39,9 @@ export const useChatStore = create<ChatStore>()(
           color: "#10b97c",
           description: "Notes, sources, and explorations.",
           instructions: "",
+          memoryScope: "default",
+          files: [],
+          createdAt: Date.now(),
         },
         {
           id: "p2",
@@ -45,6 +50,9 @@ export const useChatStore = create<ChatStore>()(
           color: "#38bdf8",
           description: "Drafts and editing.",
           instructions: "",
+          memoryScope: "default",
+          files: [],
+          createdAt: Date.now(),
         },
       ],
       chats: [],
@@ -109,19 +117,34 @@ export const useChatStore = create<ChatStore>()(
           chats: get().chats.map((c) => (c.id === chatId ? { ...c, projectId } : c)),
         }),
 
-      createProject: (name, emoji = "📁") => {
+      createProject: (name, opts) => {
         const id = uid();
         const project: Project = {
           id,
           name,
-          emoji,
+          emoji: opts?.emoji ?? "📁",
           color: COLORS[get().projects.length % COLORS.length],
-          description: "",
+          description: opts?.description ?? "",
           instructions: "",
+          memoryScope: opts?.memoryScope ?? "default",
+          files: [],
+          createdAt: Date.now(),
         };
         set({ projects: [...get().projects, project] });
         return id;
       },
+      addProjectFile: (projectId, file) =>
+        set({
+          projects: get().projects.map((p) =>
+            p.id === projectId ? { ...p, files: [...p.files, file] } : p,
+          ),
+        }),
+      removeProjectFile: (projectId, fileId) =>
+        set({
+          projects: get().projects.map((p) =>
+            p.id === projectId ? { ...p, files: p.files.filter((f) => f.id !== fileId) } : p,
+          ),
+        }),
       renameProject: (id, name) =>
         set({ projects: get().projects.map((p) => (p.id === id ? { ...p, name } : p)) }),
       updateProject: (id, patch) =>
@@ -133,6 +156,21 @@ export const useChatStore = create<ChatStore>()(
           activeProjectId: get().activeProjectId === id ? null : get().activeProjectId,
         }),
     }),
-    { name: "aether-chat-store" },
+    {
+      name: "aether-chat-store",
+      version: 2,
+      migrate: (state: unknown) => {
+        const s = state as { projects?: Project[] } | undefined;
+        if (s?.projects) {
+          s.projects = s.projects.map((p) => ({
+            memoryScope: "default",
+            files: [],
+            createdAt: Date.now(),
+            ...p,
+          }));
+        }
+        return s as never;
+      },
+    },
   ),
 );
