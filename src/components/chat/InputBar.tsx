@@ -8,6 +8,7 @@ import { AttachmentChips } from "./AttachmentChips";
 import { getModel } from "@/lib/models";
 import { useSettings } from "@/lib/settings-store";
 import { uid, type Attachment } from "@/lib/chat-types";
+import { cn } from "@/lib/utils";
 
 interface Props {
   onSend: (text: string, attachments: Attachment[], tool: ToolMode) => void;
@@ -176,9 +177,11 @@ export function InputBar({ onSend, disabled, initialValue, placeholder, hideFoot
           </motion.button>
         </div>
       </div>
-      <div className="mt-2 text-center text-[11px] text-text-muted">
-        Aether can make mistakes. Verify important info.
-      </div>
+      {!hideFooter && (
+        <div className="mt-2 text-center text-[11px] text-text-muted">
+          Aether can make mistakes. Verify important info.
+        </div>
+      )}
     </div>
   );
 }
