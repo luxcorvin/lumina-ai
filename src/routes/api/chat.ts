@@ -184,7 +184,13 @@ export const Route = createFileRoute("/api/chat")({
                   );
 
                   if (!upstream.ok || !upstream.body) {
-                    sse(controller, "_Synthesis failed._");
+                    const errText = await upstream.text().catch(() => "");
+                    console.error("synthesis upstream failed", upstream.status, errText);
+                    sse(
+                      controller,
+                      `_Synthesis failed (${upstream.status}). ${errText.slice(0, 200)}_`,
+                    );
+                    controller.enqueue(enc.encode("data: [DONE]\n\n"));
                     controller.close();
                     return;
                   }
